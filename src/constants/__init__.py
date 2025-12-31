@@ -11,6 +11,15 @@ mongodb_password = os.getenv('MONGODB_PASSWORD')
 if not mongodb_username or not mongodb_password:
     raise ValueError("MongoDB username or password is not set.")
 
+
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
+    raise ValueError("AWS credentials are not set.")
+
+AWS_REGION_NAME = "us-east-1"
+
 # For MongoDB connection
 DATABASE_NAME = "Vehicle-Insurance-DB"
 COLLECTION_NAME = "Vehicle-Insurance-Data"
@@ -65,3 +74,13 @@ MODEL_TRAINER_MIN_SAMPLES_LEAF: int = 8
 MIN_SAMPLES_SPLIT_MAX_DEPTH: int = 3
 MIN_SAMPLES_SPLIT_CRITERION: str = 'gini'
 RANDOM_STATE: int = 101
+
+"""
+MODEL Evaluation related constants
+"""
+
+MODEL_EVALUATION_DIR_NAME: str = "model_evaluation"
+MODEL_EVALUATION_BEST_MODEL_COMPARISION_REPORT_FILE_NAME: str = "report.yaml"
+MODEL_EVALUATION_CHANGED_THRESHOLD_SCORE: float = 0.02
+MODEL_BUCKET_NAME = "vehicle-insurance-model-store"
+MODEL_PUSHER_S3_KEY = "Model-Registry"
