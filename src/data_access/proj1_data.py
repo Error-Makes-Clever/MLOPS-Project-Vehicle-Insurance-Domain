@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from typing import Optional
 
+from src.logger import logging
 from src.configuration.mongo_db_connection import MongoDBClient
 from src.constants import DATABASE_NAME
 from src.exception import MyException
@@ -17,7 +18,7 @@ class Proj1Data:
         Initializes the MongoDB client connection.
         """
         try:
-            self.mongo_client = MongoDBClient(database_name=DATABASE_NAME)
+            self.mongo_client = MongoDBClient(database_name = DATABASE_NAME)
         except Exception as e:
             raise MyException(e, sys)
 
@@ -52,6 +53,41 @@ class Proj1Data:
                 df = df.drop(columns=["id"], axis=1)
             df.replace({"na":np.nan},inplace=True)
             return df
+
+        except Exception as e:
+            raise MyException(e, sys)
+        
+    def insert_dataframe(self, df: pd.DataFrame, collection_name: str) -> None:
+        """
+        Inserts a pandas DataFrame into MongoDB collection.
+
+        Parameters:
+        ----------
+        df : pd.DataFrame
+            DataFrame to be inserted into MongoDB.
+        collection_name : str
+            Target MongoDB collection name.
+        """
+
+        try:
+            if df.empty:
+                raise ValueError("DataFrame is empty. Nothing to insert.")
+
+            # Replace NaN with None (MongoDB does not support NaN)
+            df = df.where(pd.notnull(df), None)
+
+            # Convert DataFrame to list of dictionaries
+            records = df.to_dict(orient="records")
+
+            # Get collection
+            collection = self.mongo_client.database[collection_name]
+
+            # Insert data
+            result = collection.insert_many(records)
+
+            logging.info(
+                f"Inserted {len(result.inserted_ids)} records into MongoDB collection '{collection_name}'."
+            )
 
         except Exception as e:
             raise MyException(e, sys)

@@ -23,6 +23,7 @@ AWS_REGION_NAME = "us-east-1"
 # For MongoDB connection
 DATABASE_NAME = "Vehicle-Insurance-DB"
 COLLECTION_NAME = "Vehicle-Insurance-Data"
+LOGIN_CREDENTIALS_COLLECTION_NAME = "Login-Credentials-Data"
 MONGODB_URL_KEY = f"mongodb+srv://{mongodb_username}:{mongodb_password}@vehicle-insurance-clust.3qswxda.mongodb.net/?appName=Vehicle-Insurance-Cluster"
 
 PIPELINE_NAME: str = ""
@@ -90,3 +91,10 @@ MODEL Pusher related constant
 S3_MODEL_FILE_NAME = "model.pkl"
 S3_MODEL_METRICS_FILE_NAME = "metrics.yaml"
 MODEL_BUCKET_NAME = "vehicle-insurance-model-store"
+
+"""
+Application Config
+"""
+
+APP_HOST = "0.0.0.0"
+APP_PORT = 5000

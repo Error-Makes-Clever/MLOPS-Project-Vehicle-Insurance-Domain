@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Insurance Prediction</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
+    
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <h2>Training Login</h2>
+        {% if error_message %}
+        <div class="error-message">{{ error_message }}</div>
+        {% endif %}
+        <form method="POST" action="/train" id="trainForm">
+            <input type="text" name="user_id" placeholder="User ID" id="userId" required>
+            <input type="password" name="password" placeholder="Password" id="password" required>
+            <button type="submit" id="trainButton">Train Model</button>
+        </form>
+        <div class="loading-container" id="loadingContainer" style="display: none;">
+            <div class="spinner"></div>
+            <p class="loading-text">Training in progress...</p>
+            <p class="loading-subtext">Please wait, this may take a few minutes</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Vehicle Insurance Prediction</h1>
+        
+        <form method="POST" action="/">
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Gender (1: Male, 0: Female):</label>
+                    <input type="number" name="Gender" required>
+                </div>
+                <div class="input-group">
+                    <label>Age:</label>
+                    <input type="number" name="Age" required>
+                </div>
+                <div class="input-group">
+                    <label>Driving License (0: No, 1: Yes):</label>
+                    <input type="number" name="Driving_License" required>
+                </div>
+                <div class="input-group">
+                    <label>Region Code:</label>
+                    <input type="number" step="0.01" name="Region_Code" required>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Previously Insured (0: No, 1: Yes):</label>
+                    <input type="number" name="Previously_Insured" required>
+                </div>
+                <div class="input-group">
+                    <label>Annual Premium:</label>
+                    <input type="number" step="0.01" name="Annual_Premium" required>
+                </div>
+                <div class="input-group">
+                    <label>Policy Sales Channel:</label>
+                    <input type="number" step="0.01" name="Policy_Sales_Channel" required>
+                </div>
+                <div class="input-group">
+                    <label>Vintage:</label>
+                    <input type="number" name="Vintage" required>
+                </div>
+            </div>
+
+            <div class="form-grid row-3">
+                <div class="input-group">
+                    <label>Vehicle Age < 1 Year (0: No, 1: Yes):</label>
+                    <input type="number" name="Vehicle_Age_lt_1_Year" required>
+                </div>
+                <div class="input-group">
+                    <label>Vehicle Age > 2 Years (0: No, 1: Yes):</label>
+                    <input type="number" name="Vehicle_Age_gt_2_Years" required>
+                </div>
+                <div class="input-group">
+                    <label>Vehicle Damage (0: No, 1: Yes):</label>
+                    <input type="number" name="Vehicle_Damage_Yes" required>
+                </div>
+            </div>
+
+            <button type="submit" class="predict-btn">🔮 Predict Insurance Response</button>
+        </form>
+
+        {% if context %}
+        <div class="result">
+            <h2>Prediction Result: {{ context }}</h2>
+        </div>
+        {% endif %}
+
+        {% if train_success %}
+        <div class="success-message">{{ train_success }}</div>
+        {% endif %}
+    </div>
+
+    <script>
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // Handle training form submission
+        document.getElementById('trainForm').addEventListener('submit', function(e) {
+            // Show loading indicator
+            document.getElementById('loadingContainer').style.display = 'block';
+            document.getElementById('trainButton').disabled = true;
+            document.getElementById('trainButton').style.opacity = '0.6';
+            document.getElementById('trainButton').style.cursor = 'not-allowed';
+        });
+
+        // Check for training success message and show notification
+        {% if train_success %}
+        window.onload = function() {
+            alert("✅ {{ train_success }}");
+        }
+        {% endif %}
+
+        // Check for error message and show notification
+        {% if error_message %}
+        window.onload = function() {
+            alert("❌ {{ error_message }}");
+        }
+        {% endif %}
+    </script>
+</body>
+</html>
