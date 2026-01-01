@@ -3,6 +3,7 @@ from src.configuration.aws_connection import S3Client
 from io import StringIO
 from typing import Union,List
 import os,sys
+import yaml
 from src.logger import logging
 from mypy_boto3_s3.service_resource import Bucket, Object
 from src.exception import MyException
@@ -270,6 +271,36 @@ class SimpleStorageService:
 
         except Exception as e:
             raise MyException(e, sys) from e
+        
+
+    def load_yaml(self, bucket_name: str, file_key: str) -> dict:
+        """
+        Load a YAML file from S3 and return it as a dictionary.
+
+        Args:
+            bucket_name (str): S3 bucket name
+            file_key (str): YAML file key in bucket
+
+        Returns:
+            dict: Parsed YAML content
+        """
+
+        logging.info("Loading YAML file from S3")
+
+        try:
+            s3_object = self.get_objects_by_prefix(file_key, bucket_name)
+
+            if isinstance(s3_object, list):
+                s3_object = s3_object[0]
+
+            content = self.read_object(s3_object, decode=True)
+            data = yaml.safe_load(content)
+
+            logging.info("YAML file loaded successfully from S3")
+            return data
+
+        except Exception as e:
+            raise MyException(e, sys)
 
 
     def upload_df_as_csv(self, data_frame: DataFrame, local_filename: str, bucket_filename: str, bucket_name: str) -> None:

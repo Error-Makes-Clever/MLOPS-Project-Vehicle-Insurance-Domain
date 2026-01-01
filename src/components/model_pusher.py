@@ -20,7 +20,7 @@ class ModelPusher:
         self.s3 = SimpleStorageService()
         self.model_evaluation_artifact = model_evaluation_artifact
         self.model_pusher_config = model_pusher_config
-        self.proj1_estimator = Proj1Estimator(bucket_name = model_pusher_config.bucket_name, model_path = model_pusher_config.s3_model_key_path)
+        self.proj1_estimator = Proj1Estimator(bucket_name = model_pusher_config.bucket_name, model_path = model_pusher_config.s3_model_path, model_metric_path = model_pusher_config.s3_model_metric_path)
 
 
     def initiate_model_pusher(self) -> ModelPusherArtifact:
@@ -42,11 +42,16 @@ class ModelPusher:
             logging.info("Uploading new model to S3 bucket....")
             self.proj1_estimator.save_model(from_file = self.model_evaluation_artifact.trained_model_path)
 
-            model_pusher_artifact = ModelPusherArtifact(bucket_name = self.model_pusher_config.bucket_name,
-                                                        s3_model_path = self.model_pusher_config.s3_model_key_path)
+            logging.info("Uploaded trained model folder to s3 bucket")
+            
+            logging.info("Uploading new model metrics to S3 bucket....")
+            self.proj1_estimator.save_metrics(from_file = self.model_evaluation_artifact.train_metric_artifact_path)
+            logging.info("Uploaded trained model metrics folder to s3 bucket")
 
-            logging.info("Uploaded artifacts folder to s3 bucket")
-            logging.info(f"Model pusher artifact: [{model_pusher_artifact}]")
+            model_pusher_artifact = ModelPusherArtifact(bucket_name = self.model_pusher_config.bucket_name,
+                                                        s3_model_path = self.model_pusher_config.s3_model_path,
+                                                        s3_model_metric_path = self.model_pusher_config.s3_model_metric_path)
+
             logging.info("Exited initiate_model_pusher method of ModelTrainer class")
             
             return model_pusher_artifact

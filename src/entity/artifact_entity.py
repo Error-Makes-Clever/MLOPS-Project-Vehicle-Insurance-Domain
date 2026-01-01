@@ -39,7 +39,9 @@ class ModelEvaluationArtifact:
     is_model_accepted : bool
     changed_accuracy : float
     s3_model_path : str 
+    s3_model_metric_path : str
     trained_model_path : str
+    train_metric_artifact_path : str
     evaluation_comparision_report_path : str
 
 
@@ -47,3 +49,4 @@ class ModelEvaluationArtifact:
 class ModelPusherArtifact:
     bucket_name : str
     s3_model_path : str
+    s3_model_metric_path : str

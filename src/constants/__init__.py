@@ -82,5 +82,11 @@ MODEL Evaluation related constants
 MODEL_EVALUATION_DIR_NAME: str = "model_evaluation"
 MODEL_EVALUATION_BEST_MODEL_COMPARISION_REPORT_FILE_NAME: str = "report.yaml"
 MODEL_EVALUATION_CHANGED_THRESHOLD_SCORE: float = 0.02
+
+"""
+MODEL Pusher related constant
+"""
+
+S3_MODEL_FILE_NAME = "model.pkl"
+S3_MODEL_METRICS_FILE_NAME = "metrics.yaml"
 MODEL_BUCKET_NAME = "vehicle-insurance-model-store"
-MODEL_PUSHER_S3_KEY = "Model-Registry"

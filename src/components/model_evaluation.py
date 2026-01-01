@@ -3,7 +3,7 @@ from src.entity.artifact_entity import DataTransformationArtifact, ModelTrainerA
 from sklearn.metrics import f1_score
 from src.exception import MyException
 from src.logger import logging
-from src.utils.main_utils import write_yaml_file, load_numpy_array_data
+from src.utils.main_utils import write_yaml_file, read_yaml_file
 import sys
 import pandas as pd
 from typing import Optional
@@ -21,11 +21,10 @@ class EvaluateModelResponse:
 
 class ModelEvaluation:
 
-    def __init__(self, model_eval_config : ModelEvaluationConfig, data_transformation_artifact : DataTransformationArtifact, model_trainer_artifact : ModelTrainerArtifact):
+    def __init__(self, model_eval_config : ModelEvaluationConfig, model_trainer_artifact : ModelTrainerArtifact):
 
         try:
             self.model_eval_config = model_eval_config
-            self.data_transformation_artifact = data_transformation_artifact
             self.model_trainer_artifact = model_trainer_artifact
 
         except Exception as e:
@@ -43,16 +42,18 @@ class ModelEvaluation:
 
         try:
             bucket_name = self.model_eval_config.bucket_name
-            model_path = self.model_eval_config.s3_model_key_path
-            proj1_estimator = Proj1Estimator(bucket_name = bucket_name, model_path = model_path)
+            model_path = self.model_eval_config.s3_model_path
+            model_metric_path = self.model_eval_config.s3_model_metric_path
+            proj1_estimator = Proj1Estimator(bucket_name = bucket_name, model_path = model_path, model_metric_path = model_metric_path)
 
-            if proj1_estimator.is_model_present(model_path = model_path):
+            if proj1_estimator.is_model_present(model_path = model_path) and proj1_estimator.is_model_metric_present(model_metric_path = model_metric_path):
                 return proj1_estimator
             
             return None
         
         except Exception as e:
             raise  MyException(e,sys)
+    
 
     def evaluate_model(self) -> EvaluateModelResponse:
 
@@ -67,12 +68,15 @@ class ModelEvaluation:
 
         try:
 
-            test_array = load_numpy_array_data(file_path = self.data_transformation_artifact.transformed_test_file_path)
-            x, y = test_array[:, :-1], test_array[:, -1]
+            logging.info("Initialized Model Evaluation Component.")
 
-            logging.info("Transformed Test data loaded and now obtaining prediction...")
+            logging.info("Loading trained model metric artifact.")
+            trained_model_metric_path = self.model_trainer_artifact.train_metric_artifact_path
 
-            trained_model_f1_score = self.model_trainer_artifact.metric_artifact.f1_score
+            trained_model_metric = read_yaml_file(file_path = trained_model_metric_path)
+            trained_model_f1_score = trained_model_metric["f1_score"]
+
+            logging.info("Loaded trained model metric artifact.")
             logging.info(f"F1_Score for this model: {trained_model_f1_score}")
 
             best_model_f1_score = None
@@ -80,9 +84,8 @@ class ModelEvaluation:
 
             if best_model is not None:
 
-                logging.info(f"Computing F1_Score for production model..")
-                y_hat_best_model = best_model.predict(x)
-                best_model_f1_score = f1_score(y, y_hat_best_model)
+                logging.info(f"Retriving metric of best model from s3 bucket.")
+                best_model_f1_score = best_model.load_metrics()["f1_score"]
                 
                 logging.info(f"F1_Score-Production Model: {best_model_f1_score}, F1_Score-New Trained Model : {trained_model_f1_score}")
             
@@ -131,12 +134,14 @@ class ModelEvaluation:
             logging.info("Initialized Model Evaluation Component.")
 
             evaluate_model_response = self.evaluate_model()
-            s3_model_path = self.model_eval_config.s3_model_key_path
+            s3_model_path = self.model_eval_config.s3_model_path
 
             model_evaluation_artifact = ModelEvaluationArtifact(
                 is_model_accepted = evaluate_model_response.is_model_accepted,
                 s3_model_path = s3_model_path,
+                s3_model_metric_path = self.model_eval_config.s3_model_metric_path,
                 trained_model_path = self.model_trainer_artifact.trained_model_file_path,
+                train_metric_artifact_path = self.model_trainer_artifact.train_metric_artifact_path,
                 changed_accuracy = evaluate_model_response.difference,
                 evaluation_comparision_report_path = self.model_eval_config.model_evaluation_report_file_path)
 
